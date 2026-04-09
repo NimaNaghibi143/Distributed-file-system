@@ -7,8 +7,10 @@ import (
 	"github.com/NimaNaghibi143/Distributed-file-system/p2p"
 )
 
-func OnPeer(p2p.Peer) error {
-	return fmt.Errorf("failed the onpeer func")
+func OnPeer(peer p2p.Peer) error {
+	peer.Close()
+	//fmt.Printf("doing some logic with the peer outside TCPTransport.")
+	return nil
 }
 
 func main() {
