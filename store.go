@@ -35,8 +35,9 @@ func (s *Store) writeSteam(key string, r io.Reader) error {
 
 	// for now this is fine till i find a way to name the file using a hash func
 	filename := "somefilename"
+	pathAndFilename := pathName + "/" + filename
 
-	f, err := os.Open(pathName + "/" + filename)
+	f, err := os.Create(pathAndFilename)
 	if err != nil {
 		return err
 	}
@@ -47,7 +48,7 @@ func (s *Store) writeSteam(key string, r io.Reader) error {
 		return err
 	}
 
-	log.Printf("written (%d) bytes to disk", n)
+	log.Printf("written (%d) bytes to disk: %s", n, pathAndFilename)
 
 	return nil
 }

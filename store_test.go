@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 func TestStore(t *testing.T) {
 	opts := StoreOpts{
@@ -8,4 +11,9 @@ func TestStore(t *testing.T) {
 	}
 
 	s := NewStore(opts)
+
+	data := bytes.NewReader([]byte("some jpg bytes"))
+	if err := s.writeSteam("myspecialpicture", data); err != nil {
+		t.Error(err)
+	}
 }
