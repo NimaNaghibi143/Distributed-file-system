@@ -2,17 +2,23 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"testing"
 )
 
 func TestPathTransformFunc(t *testing.T) {
 	key := "yourmomsbestpicture"
-	pathname := CASPathTransformFunc(key)
+	pathKey := CASPathTransformFunc(key)
 
+	expectedOriginalKey := "91fa316fe12e57b7553942e901fef883dd9515b6"
 	expectedPathName := "91fa3/16fe1/2e57b/75539/42e90/1fef8/83dd9/515b6"
 
-	if pathname != expectedPathName {
-		t.Errorf("have %s want %s", pathname, expectedPathName)
+	if pathKey.PathName != expectedPathName {
+		t.Errorf("have %s want %s", pathKey.PathName, expectedPathName)
+	}
+
+	if pathKey.Filename != expectedOriginalKey {
+		t.Errorf("have %s want %s", pathKey.Filename, expectedOriginalKey)
 	}
 
 }
@@ -23,9 +29,25 @@ func TestStore(t *testing.T) {
 	}
 
 	s := NewStore(opts)
+	key := "myspecialpicture"
+	data := []byte("some jpg bytes")
 
-	data := bytes.NewReader([]byte("some jpg bytes"))
-	if err := s.writeSteam("myspecialpicture", data); err != nil {
+	if err := s.writeSteam(key, bytes.NewReader(data)); err != nil {
 		t.Error(err)
 	}
+
+	r, err := s.Read(key)
+	if err != nil {
+		t.Error(err)
+	}
+
+	b, _ := io.ReadAll(r)
+
+	if string(b) != string(data) {
+		t.Errorf("want %s have %s", data, b)
+	}
+
+	// if err := s.Delete(key); err != nil {
+	// 	t.Error(err)
+	// }
 }
