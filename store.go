@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
@@ -38,8 +39,18 @@ type PathKey struct {
 	Filename string
 }
 
+func (p PathKey) FirstPathName() string {
+	paths := strings.Split(p.PathName, "/")
+
+	if len(paths) == 0 {
+		return ""
+	}
+
+	return paths[0]
+}
+
 func (p PathKey) FullPath() string {
-	return fmt.Sprintf("%s%s", p.PathName, p.Filename)
+	return fmt.Sprintf("%s/%s", p.PathName, p.Filename)
 }
 
 type StoreOpts struct {
@@ -60,6 +71,31 @@ func NewStore(opts StoreOpts) *Store {
 	}
 }
 
+func (s *Store) Has(key string) bool {
+	pathKey := s.PathTransformFunc(key)
+
+	_, err := os.Stat(pathKey.FullPath())
+	if err == fs.ErrNotExist {
+		return false
+	}
+
+	return true
+}
+
+func (s *Store) Delete(key string) error {
+	pathKey := s.PathTransformFunc(key)
+
+	defer func() {
+		log.Printf("deleted [%s] from disk", pathKey.Filename)
+	}()
+
+	// if err := os.RemoveAll(pathKey.FullPath()); err != nil {
+	// 	return err
+	// }
+
+	return os.RemoveAll(pathKey.FirstPathName())
+}
+
 func (s *Store) Read(key string) (io.Reader, error) {
 	f, err := s.readStream(key)
 
@@ -78,13 +114,6 @@ func (s *Store) Read(key string) (io.Reader, error) {
 func (s *Store) readStream(key string) (io.ReadCloser, error) {
 	pathKey := s.PathTransformFunc(key)
 	return os.Open(pathKey.FullPath())
-}
-
-func (s *Store) Delete(key string) error {
-	pathKey := s.PathTransformFunc(key)
-	// Remove the top-level directory (first path segment) and everything beneath it
-	firstDir := strings.Split(pathKey.PathName, "/")[0]
-	return os.RemoveAll(firstDir)
 }
 
 func (s *Store) writeSteam(key string, r io.Reader) error {
