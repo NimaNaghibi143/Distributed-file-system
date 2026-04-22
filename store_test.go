@@ -66,7 +66,7 @@ func TestStore(t *testing.T) {
 	}
 	fmt.Println(string(b))
 
-	// if err := s.Delete(key); err != nil {
-	// 	t.Error(err)
-	// }
+	if err := s.Delete(key); err != nil {
+		t.Error(err)
+	}
 }

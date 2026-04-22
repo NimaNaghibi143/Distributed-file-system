@@ -105,11 +105,12 @@ func (s *Store) Delete(key string) error {
 		log.Printf("deleted [%s] from disk", pathKey.Filename)
 	}()
 
+	firstPathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FirstPathName())
 	// if err := os.RemoveAll(pathKey.FullPath()); err != nil {
 	// 	return err
 	// }
 
-	return os.RemoveAll(pathKey.FirstPathName())
+	return os.RemoveAll(firstPathNameWithRoot)
 }
 
 func (s *Store) Read(key string) (io.Reader, error) {
