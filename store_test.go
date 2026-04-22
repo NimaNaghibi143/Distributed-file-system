@@ -43,12 +43,10 @@ func TestStoreDeleteKey(t *testing.T) {
 }
 
 func TestStore(t *testing.T) {
-	opts := StoreOpts{
-		PathTransformFunc: CASPathTransformFunc,
-	}
+	s := newStore()
+	defer teardown(t, s)
 
-	s := NewStore(opts)
-	key := "momsspecials"
+	key := "fooandbar"
 	data := []byte("some jpg bytes")
 
 	if err := s.writeSteam(key, bytes.NewReader(data)); err != nil {
@@ -71,6 +69,20 @@ func TestStore(t *testing.T) {
 	fmt.Println(string(b))
 
 	if err := s.Delete(key); err != nil {
+		t.Error(err)
+	}
+}
+
+func newStore() *Store {
+	opts := StoreOpts{
+		PathTransformFunc: CASPathTransformFunc,
+	}
+
+	return NewStore(opts)
+}
+
+func teardown(t *testing.T, s *Store) {
+	if err := s.Clear(); err != nil {
 		t.Error(err)
 	}
 }
