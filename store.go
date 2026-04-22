@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+const defaultRootFolderName = "ggnetwork"
+
 func CASPathTransformFunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
 	hashStr := hex.EncodeToString(hash[:])
@@ -54,11 +56,16 @@ func (p PathKey) FullPath() string {
 }
 
 type StoreOpts struct {
+	// Root is the folder name of the root, contianing all the folders/files of the system.
+	Root              string
 	PathTransformFunc PathTransformFunc
 }
 
-var DefaultPathTransformFunc = func(key string) string {
-	return key
+var DefaultPathTransformFunc = func(key string) PathKey {
+	return PathKey{
+		PathName: key,
+		Filename: key,
+	}
 }
 
 type Store struct {
@@ -66,6 +73,14 @@ type Store struct {
 }
 
 func NewStore(opts StoreOpts) *Store {
+	if opts.PathTransformFunc == nil {
+		opts.PathTransformFunc = DefaultPathTransformFunc
+	}
+
+	if len(opts.Root) == 0 {
+		opts.Root = defaultRootFolderName
+	}
+
 	return &Store{
 		StoreOpts: opts,
 	}
@@ -118,14 +133,14 @@ func (s *Store) readStream(key string) (io.ReadCloser, error) {
 
 func (s *Store) writeSteam(key string, r io.Reader) error {
 	pathKey := s.PathTransformFunc(key)
-
-	if err := os.MkdirAll(pathKey.PathName, os.ModePerm); err != nil {
+	// we need to prepend the root name to this
+	if err := os.MkdirAll(s.Root+"/"+pathKey.PathName, os.ModePerm); err != nil {
 		return err
 	}
 
 	fullPath := pathKey.FullPath()
 
-	f, err := os.Create(fullPath)
+	f, err := os.Create(s.Root + "/" + fullPath)
 	if err != nil {
 		return err
 	}

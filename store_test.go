@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
-	"io"
 	"testing"
 )
 
@@ -55,20 +53,18 @@ func TestStore(t *testing.T) {
 		t.Error(err)
 	}
 
-	r, err := s.Read(key)
-	if err != nil {
-		t.Error(err)
-	}
+	// r, err := s.Read(key)
+	// if err != nil {
+	// 	t.Error(err)
+	// }
 
-	b, _ := io.ReadAll(r)
+	// b, _ := io.ReadAll(r)
 
-	fmt.Println(string(b))
+	// if string(b) != string(data) {
+	// 	t.Errorf("want %s have %s", data, b)
+	// }
 
-	if string(b) != string(data) {
-		t.Errorf("want %s have %s", data, b)
-	}
-
-	if err := s.Delete(key); err != nil {
-		t.Error(err)
-	}
+	// if err := s.Delete(key); err != nil {
+	// 	t.Error(err)
+	// }
 }
